@@ -11,20 +11,15 @@ import { TokenValidator } from "src/TokenValidator/TokenValidator.sol";
 contract DeployModuleScript is Script, RegistryDeployer {
     function run() public {
         // Setup module bytecode, deploy params, and data
-        bytes memory bytecode = type(TokenValidator).creationCode;
-        bytes memory deployParams = "";
-        bytes memory data = "";
+        bytes memory initcode = type(TokenValidator).creationCode;
+        bytes memory metadata = "";
+        bytes memory resolverContext = "";
 
         // Get private key for deployment
         vm.startBroadcast(vm.envUint("PK"));
 
         // Deploy module
-        address module = deployModule({
-            code: bytecode,
-            deployParams: deployParams,
-            salt: bytes32(0),
-            data: data
-        });
+        address module = deployModule(initcode, bytes32(0), metadata, resolverContext);
 
         // Stop broadcast and log module address
         vm.stopBroadcast();

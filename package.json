@@ -25,8 +25,8 @@
     "test:optimized": "pnpm run build:optimized && FOUNDRY_PROFILE=test-optimized forge test"
   },
   "dependencies": {
-    "@rhinestone/modulekit": "^0.4.8",
-    "@rhinestone/checknsignatures": "github:rhinestonewtf/checknsignatures"
+    "@rhinestone/checknsignatures": "github:rhinestonewtf/checknsignatures",
+    "@rhinestone/modulekit": "^0.4.13"
   },
   "files": [
     "src",
