@@ -14,6 +14,7 @@ import { MODULE_TYPE_VALIDATOR } from "modulekit/external/ERC7579.sol";
 import { ERC20 } from "solady/tokens/ERC20.sol";
 
 import { TokenValidator } from "src/TokenValidator/TokenValidator.sol";
+import { TokenStaker } from "src/TokenValidator/TokenStaker.sol";
 import { TokenType, TGAConfig } from "src/TokenValidator/DataTypes.sol";
 import { signHash } from "test/utils/Signature.sol";
 import { MintableERC20 } from "test/utils/MintableERC20.sol";
@@ -36,6 +37,9 @@ contract TokenValidatorTest is RhinestoneModuleKit, Test {
 
     function setUp() public {
         init();
+
+        // Create the token staker
+        TokenStaker tokenStaker = new TokenStaker();
 
         // Create the signers
         _signers = new address[](1);
@@ -60,7 +64,7 @@ contract TokenValidatorTest is RhinestoneModuleKit, Test {
         bytes memory data = abi.encode(config);
 
         // Create the validator
-        validator = new TokenValidator();
+        validator = new TokenValidator(tokenStaker);
         vm.label(address(validator), "TokenValidator");
 
         // Create the account and install the validator
@@ -71,6 +75,12 @@ contract TokenValidatorTest is RhinestoneModuleKit, Test {
             module: address(validator),
             data: data
         });
+
+        // Stake the token
+        vm.startPrank(_signers[0]);
+        usdc.approve(address(tokenStaker), 100_000);
+        tokenStaker.stakeErc20(instance.account, IERC20(address(usdc)), 100_000);
+        vm.stopPrank();
     }
 
     function test_ValidateUserOp() public {

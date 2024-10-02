@@ -11,6 +11,7 @@ import { ECDSA } from "solady/utils/ECDSA.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 
 import { TokenType, TGAConfig } from "./DataTypes.sol";
+import { TokenStaker } from "./TokenStaker.sol";
 
 contract TokenValidator is ERC7579ValidatorBase {
     using LibSort for *;
@@ -19,8 +20,17 @@ contract TokenValidator is ERC7579ValidatorBase {
                             CONSTANTS & STORAGE
     //////////////////////////////////////////////////////////////////////////*/
 
+    TokenStaker public immutable tokenStaker;
     // account => TGAConfig
     mapping(address account => TGAConfig config) public accountConfig;
+
+    /*//////////////////////////////////////////////////////////////////////////
+                                 CONSTRUCTOR
+    //////////////////////////////////////////////////////////////////////////*/
+
+    constructor(TokenStaker _tokenStaker) {
+        tokenStaker = _tokenStaker;
+    }
 
     /*//////////////////////////////////////////////////////////////////////////
                                      CONFIG
@@ -182,7 +192,7 @@ contract TokenValidator is ERC7579ValidatorBase {
         if (config.tokenAddress == address(0)) {
             return false;
         }
-        uint256 balance = IERC20(config.tokenAddress).balanceOf(signer);
+        uint256 balance = tokenStaker.erc20Stakes(signer, IERC20(config.tokenAddress), account);
         return balance >= config.minAmount;
     }
 
