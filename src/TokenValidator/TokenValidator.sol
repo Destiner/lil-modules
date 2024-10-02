@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
+import { IERC20 } from "forge-std/interfaces/IERC20.sol";
+
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 import { CheckSignatures } from "checknsignatures/CheckNSignatures.sol";
 import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
 import { ECDSA } from "solady/utils/ECDSA.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
-import { ERC20 } from "solady/tokens/ERC20.sol";
 
 import { TokenType, TGAConfig } from "./DataTypes.sol";
 
@@ -181,8 +182,7 @@ contract TokenValidator is ERC7579ValidatorBase {
         if (config.tokenAddress == address(0)) {
             return false;
         }
-        ERC20 token = ERC20(config.tokenAddress);
-        uint256 balance = token.balanceOf(signer);
+        uint256 balance = IERC20(config.tokenAddress).balanceOf(signer);
         return balance >= config.minAmount;
     }
 
