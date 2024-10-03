@@ -2,7 +2,8 @@
 pragma solidity ^0.8.23;
 
 enum TokenType {
-    ERC20
+    ERC20,
+    ERC721
 }
 
 // TGA Configuration

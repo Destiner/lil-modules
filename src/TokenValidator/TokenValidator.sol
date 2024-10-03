@@ -2,6 +2,7 @@
 pragma solidity ^0.8.23;
 
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
+import { IERC721 } from "forge-std/interfaces/IERC721.sol";
 
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
@@ -195,11 +196,15 @@ contract TokenValidator is ERC7579ValidatorBase {
     function _isValidBalance(address account, address signer) internal view returns (bool) {
         // get the account config
         TGAConfig storage config = accountConfig[account];
-        if (config.tokenType != TokenType.ERC20) {
-            return false;
+        if (config.tokenType == TokenType.ERC20) {
+            uint256 balance = TOKEN_STAKER.erc20Stakes(signer, IERC20(config.tokenAddress), account);
+            return balance >= config.minAmount;
         }
-        uint256 balance = TOKEN_STAKER.erc20Stakes(signer, IERC20(config.tokenAddress), account);
-        return balance >= config.minAmount;
+        if (config.tokenType == TokenType.ERC721) {
+            uint256 balance =
+                TOKEN_STAKER.erc721CumulativeStakes(signer, IERC721(config.tokenAddress), account);
+            return balance >= config.minAmount;
+        }
     }
 
     /*//////////////////////////////////////////////////////////////////////////

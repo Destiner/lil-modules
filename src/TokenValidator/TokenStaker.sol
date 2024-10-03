@@ -18,6 +18,8 @@ contract TokenStaker {
                 IERC721 token => mapping(uint256 id => mapping(address account => uint256 balance))
             )
     ) public erc721Stakes;
+    mapping(address owner => mapping(IERC721 token => mapping(address account => uint256 balance)))
+        public erc721CumulativeStakes;
     mapping(
         address owner
             => mapping(
@@ -63,6 +65,7 @@ contract TokenStaker {
 
         tokenAddress.transferFrom(msg.sender, address(this), id);
         erc721Stakes[msg.sender][tokenAddress][id][account] += amount;
+        erc721CumulativeStakes[msg.sender][tokenAddress][account] += amount;
     }
 
     function unstakeErc721(
@@ -74,6 +77,7 @@ contract TokenStaker {
         external
     {
         erc721Stakes[msg.sender][tokenAddress][id][account] -= amount;
+        erc721CumulativeStakes[msg.sender][tokenAddress][account] -= amount;
         tokenAddress.transferFrom(address(this), msg.sender, id);
     }
 
