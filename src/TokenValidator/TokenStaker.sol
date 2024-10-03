@@ -53,33 +53,19 @@ contract TokenStaker {
         tokenAddress.transfer(msg.sender, amount);
     }
 
-    function stakeErc721(
-        address account,
-        IERC721 tokenAddress,
-        uint256 id,
-        uint256 amount
-    )
-        external
-    {
+    function stakeErc721(address account, IERC721 tokenAddress, uint256 id) external {
         if (account == address(0)) {
             revert InvalidAccount();
         }
 
         tokenAddress.transferFrom(msg.sender, address(this), id);
-        erc721Stakes[msg.sender][tokenAddress][id][account] += amount;
-        erc721CumulativeStakes[msg.sender][tokenAddress][account] += amount;
+        erc721Stakes[msg.sender][tokenAddress][id][account] += 1;
+        erc721CumulativeStakes[msg.sender][tokenAddress][account] += 1;
     }
 
-    function unstakeErc721(
-        address account,
-        IERC721 tokenAddress,
-        uint256 id,
-        uint256 amount
-    )
-        external
-    {
-        erc721Stakes[msg.sender][tokenAddress][id][account] -= amount;
-        erc721CumulativeStakes[msg.sender][tokenAddress][account] -= amount;
+    function unstakeErc721(address account, IERC721 tokenAddress, uint256 id) external {
+        erc721Stakes[msg.sender][tokenAddress][id][account] -= 1;
+        erc721CumulativeStakes[msg.sender][tokenAddress][account] -= 1;
         tokenAddress.transferFrom(address(this), msg.sender, id);
     }
 
