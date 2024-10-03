@@ -14,9 +14,9 @@ contract MockTokenStaker {
         _amounts = amounts;
     }
 
-    function erc20Stakes(
+    function erc20StakeOf(
         address owner,
-        IERC20 token,
+        IERC20 tokenAddress,
         address account
     )
         external
@@ -26,10 +26,10 @@ contract MockTokenStaker {
         return _getAmount(owner);
     }
 
-    function erc721Stakes(
+    function erc721StakeOf(
         address owner,
-        IERC721 token,
-        uint256 id,
+        IERC721 tokenAddress,
+        uint256[] calldata validTokenIds,
         address account
     )
         external
@@ -39,34 +39,10 @@ contract MockTokenStaker {
         return _getAmount(owner);
     }
 
-    function erc721CumulativeStakes(
+    function erc1155StakeOf(
         address owner,
-        IERC721 token,
-        address account
-    )
-        external
-        view
-        returns (uint256)
-    {
-        return _getAmount(owner);
-    }
-
-    function erc1155Stakes(
-        address owner,
-        IERC1155 token,
-        uint256 id,
-        address account
-    )
-        external
-        view
-        returns (uint256)
-    {
-        return _getAmount(owner);
-    }
-
-    function erc1155CumulativeStakes(
-        address owner,
-        IERC1155 token,
+        IERC1155 tokenAddress,
+        uint256[] calldata validTokenIds,
         address account
     )
         external

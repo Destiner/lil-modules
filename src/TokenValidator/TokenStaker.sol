@@ -11,23 +11,23 @@ contract TokenStaker {
     //////////////////////////////////////////////////////////////////////////*/
 
     mapping(address owner => mapping(IERC20 token => mapping(address account => uint256 balance)))
-        public erc20Stakes;
+        internal erc20Stakes;
     mapping(
         address owner
             => mapping(
                 IERC721 token => mapping(uint256 id => mapping(address account => uint256 balance))
             )
-    ) public erc721Stakes;
+    ) internal erc721Stakes;
     mapping(address owner => mapping(IERC721 token => mapping(address account => uint256 balance)))
-        public erc721CumulativeStakes;
+        internal erc721CumulativeStakes;
     mapping(
         address owner
             => mapping(
                 IERC1155 token => mapping(uint256 id => mapping(address account => uint256 balance))
             )
-    ) public erc1155Stakes;
+    ) internal erc1155Stakes;
     mapping(address owner => mapping(IERC1155 token => mapping(address account => uint256 balance)))
-        public erc1155CumulativeStakes;
+        internal erc1155CumulativeStakes;
 
     /*//////////////////////////////////////////////////////////////////////////
                                        ERRORS
@@ -111,5 +111,57 @@ contract TokenStaker {
         erc1155Stakes[msg.sender][tokenAddress][id][account] -= amount;
         erc1155CumulativeStakes[msg.sender][tokenAddress][account] -= amount;
         tokenAddress.safeTransferFrom(address(this), msg.sender, id, amount, "");
+    }
+
+    function erc20StakeOf(
+        address owner,
+        IERC20 tokenAddress,
+        address account
+    )
+        external
+        view
+        returns (uint256)
+    {
+        return erc20Stakes[owner][tokenAddress][account];
+    }
+
+    function erc721StakeOf(
+        address owner,
+        IERC721 tokenAddress,
+        uint256[] calldata validTokenIds,
+        address account
+    )
+        external
+        view
+        returns (uint256)
+    {
+        uint256 balance;
+        if (validTokenIds.length == 0) {
+            return erc721CumulativeStakes[owner][tokenAddress][account];
+        }
+        for (uint256 i = 0; i < validTokenIds.length; i++) {
+            balance += erc721Stakes[owner][tokenAddress][validTokenIds[i]][account];
+        }
+        return balance;
+    }
+
+    function erc1155StakeOf(
+        address owner,
+        IERC1155 tokenAddress,
+        uint256[] calldata validTokenIds,
+        address account
+    )
+        external
+        view
+        returns (uint256)
+    {
+        uint256 balance;
+        if (validTokenIds.length == 0) {
+            return erc1155CumulativeStakes[owner][tokenAddress][account];
+        }
+        for (uint256 i = 0; i < validTokenIds.length; i++) {
+            balance += erc1155Stakes[owner][tokenAddress][validTokenIds[i]][account];
+        }
+        return balance;
     }
 }
