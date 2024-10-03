@@ -35,9 +35,6 @@ contract TokenValidatorTest is Test {
     //////////////////////////////////////////////////////////////////////////*/
 
     address _token = 0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa;
-    // address _validSigner1 = 0x0101010101010101010101010101010101010101;
-    // address _validSigner2 = 0x0202020202020202020202020202020202020202;
-    // address _invalidSigner1 = 0xf1f1f1F1f1f1F1F1f1F1f1F1F1F1F1f1F1f1f1F1;
     address[] _signers;
     uint256[] _signerPks;
 
