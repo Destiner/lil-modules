@@ -11,7 +11,13 @@ TokenValidator::onInstall
             |-- when signer threshold is zero
             |   └-- it should revert
             └-- when signer threshold is not zero
-                └-- it should set the account config
+                |-- when the token type is ERC20
+                |   |-- when the token IDs are defined
+                |   |   └-- it should revert
+                |   └-- when the token IDs are not defined
+                |       └-- it should set the account config
+                └-- when the token type is not ERC20
+                    └-- it should set the account config
 
 
 TokenValidator::validateUserOp

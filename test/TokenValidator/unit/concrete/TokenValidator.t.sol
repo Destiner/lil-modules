@@ -95,11 +95,23 @@ contract TokenValidatorTest is Test {
         returns (TGAConfig memory config)
     {
         uint256[] memory validTokenIds = new uint256[](0);
+        config = _getConfig(_tokenAddress, _minAmount, _signerThreshold, validTokenIds);
+    }
+
+    function _getConfig(
+        address _tokenAddress,
+        uint256 _minAmount,
+        uint256 _signerThreshold,
+        uint256[] memory _validTokenIds
+    )
+        internal
+        returns (TGAConfig memory config)
+    {
         config = TGAConfig({
             tokenType: TokenType.ERC20,
             tokenAddress: _tokenAddress,
             minAmount: _minAmount,
-            validTokenIds: validTokenIds,
+            validTokenIds: _validTokenIds,
             signerThreshold: _signerThreshold
         });
     }
@@ -159,12 +171,31 @@ contract TokenValidatorTest is Test {
         validator.onInstall(data);
     }
 
+    function test_OnInstallRevertWhen_TokenIdsSetForErc20()
+        public
+        whenModuleIsNotInitialized
+        whenTokenAddressIsNotNull
+        whenMinAmountIsNot0
+        whenSignerThresholdIsNot0
+    {
+        // it should revert
+        uint256[] memory tokenIds = new uint256[](2);
+        tokenIds[0] = 1;
+        tokenIds[1] = 2;
+        TGAConfig memory config = _getConfig(_token, 150, 1, tokenIds);
+        bytes memory data = abi.encode(config);
+
+        vm.expectRevert(abi.encodeWithSelector(TokenValidator.InvalidTokenIds.selector));
+        validator.onInstall(data);
+    }
+
     function test_OnInstallWhen_ValidConfig()
         public
         whenModuleIsNotInitialized
         whenTokenAddressIsNotNull
         whenMinAmountIsNot0
         whenSignerThresholdIsNot0
+        whenTokenIdsSetProperly
     {
         // it should revert
         TGAConfig memory config = _getConfig(_token, 150, 1);
@@ -255,6 +286,10 @@ contract TokenValidatorTest is Test {
     }
 
     modifier whenSignerThresholdIsNot0() {
+        _;
+    }
+
+    modifier whenTokenIdsSetProperly() {
         _;
     }
 

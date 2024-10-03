@@ -32,6 +32,7 @@ contract TokenValidator is ERC7579ValidatorBase {
     error InvalidTokenAddress();
     error InvalidMinAmount();
     error InvalidSignerThreshold();
+    error InvalidTokenIds();
 
     /*//////////////////////////////////////////////////////////////////////////
                                     CONSTRUCTOR
@@ -60,6 +61,9 @@ contract TokenValidator is ERC7579ValidatorBase {
         if (config.tokenAddress == address(0)) revert InvalidTokenAddress();
         if (config.minAmount == 0) revert InvalidMinAmount();
         if (config.signerThreshold == 0) revert InvalidSignerThreshold();
+        if (config.tokenType == TokenType.ERC20 && config.validTokenIds.length > 0) {
+            revert InvalidTokenIds();
+        }
 
         accountConfig[account] = config;
     }
@@ -201,14 +205,35 @@ contract TokenValidator is ERC7579ValidatorBase {
             uint256 balance = TOKEN_STAKER.erc20Stakes(signer, IERC20(config.tokenAddress), account);
             return balance >= config.minAmount;
         }
+        uint256[] memory validTokenIds = config.validTokenIds;
         if (config.tokenType == TokenType.ERC721) {
-            uint256 balance =
-                TOKEN_STAKER.erc721CumulativeStakes(signer, IERC721(config.tokenAddress), account);
+            uint256 balance;
+            if (validTokenIds.length == 0) {
+                balance = TOKEN_STAKER.erc721CumulativeStakes(
+                    signer, IERC721(config.tokenAddress), account
+                );
+            } else {
+                for (uint256 i = 0; i < validTokenIds.length; i++) {
+                    balance += TOKEN_STAKER.erc721Stakes(
+                        signer, IERC721(config.tokenAddress), validTokenIds[i], account
+                    );
+                }
+            }
             return balance >= config.minAmount;
         }
         if (config.tokenType == TokenType.ERC1155) {
-            uint256 balance =
-                TOKEN_STAKER.erc1155CumulativeStakes(signer, IERC1155(config.tokenAddress), account);
+            uint256 balance;
+            if (validTokenIds.length == 0) {
+                balance = TOKEN_STAKER.erc1155CumulativeStakes(
+                    signer, IERC1155(config.tokenAddress), account
+                );
+            } else {
+                for (uint256 i = 0; i < validTokenIds.length; i++) {
+                    balance += TOKEN_STAKER.erc1155Stakes(
+                        signer, IERC1155(config.tokenAddress), validTokenIds[i], account
+                    );
+                }
+            }
             return balance >= config.minAmount;
         }
     }
