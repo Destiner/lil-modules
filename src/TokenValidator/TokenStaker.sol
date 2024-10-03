@@ -26,6 +26,8 @@ contract TokenStaker {
                 IERC1155 token => mapping(uint256 id => mapping(address account => uint256 balance))
             )
     ) public erc1155Stakes;
+    mapping(address owner => mapping(IERC1155 token => mapping(address account => uint256 balance)))
+        public erc1155CumulativeStakes;
 
     /*//////////////////////////////////////////////////////////////////////////
                                        ERRORS
@@ -95,6 +97,7 @@ contract TokenStaker {
 
         tokenAddress.safeTransferFrom(msg.sender, address(this), id, amount, "");
         erc1155Stakes[msg.sender][tokenAddress][id][account] += amount;
+        erc1155CumulativeStakes[msg.sender][tokenAddress][account] += amount;
     }
 
     function unstakeErc1155(
@@ -106,6 +109,7 @@ contract TokenStaker {
         external
     {
         erc1155Stakes[msg.sender][tokenAddress][id][account] -= amount;
+        erc1155CumulativeStakes[msg.sender][tokenAddress][account] -= amount;
         tokenAddress.safeTransferFrom(address(this), msg.sender, id, amount, "");
     }
 }

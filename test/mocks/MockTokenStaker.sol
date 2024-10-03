@@ -64,6 +64,18 @@ contract MockTokenStaker {
         return _getAmount(owner);
     }
 
+    function erc1155CumulativeStakes(
+        address owner,
+        IERC1155 token,
+        address account
+    )
+        external
+        view
+        returns (uint256)
+    {
+        return _getAmount(owner);
+    }
+
     function _getAmount(address a) internal view returns (uint256 amount) {
         for (uint256 i = 0; i < _addresses.length; i++) {
             if (_addresses[i] == a) {
