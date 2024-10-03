@@ -198,9 +198,6 @@ contract TokenValidator is ERC7579ValidatorBase {
         if (config.tokenType != TokenType.ERC20) {
             return false;
         }
-        if (config.tokenAddress == address(0)) {
-            return false;
-        }
         uint256 balance = TOKEN_STAKER.erc20Stakes(signer, IERC20(config.tokenAddress), account);
         return balance >= config.minAmount;
     }
