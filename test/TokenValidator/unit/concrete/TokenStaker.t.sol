@@ -8,6 +8,7 @@ import { IERC1155 } from "forge-std/interfaces/IERC1155.sol";
 
 import { TokenStaker } from "src/TokenValidator/TokenStaker.sol";
 import { MintableERC20 } from "test/utils/MintableERC20.sol";
+import { MintableERC721 } from "test/utils/MintableERC721.sol";
 
 contract TokenStakerTest is Test {
     /*//////////////////////////////////////////////////////////////////////////
@@ -53,6 +54,12 @@ contract TokenStakerTest is Test {
         _mintableErc20.mint(_owners[0], 100);
         _mintableErc20.mint(_owners[1], 200);
         _erc20Token = IERC20(address(_mintableErc20));
+
+        MintableERC721 _mintableErc721 = new MintableERC721("NFT", "Non-Fungible Token");
+        _mintableErc721.mint(_owners[0], 1);
+        _mintableErc721.mint(_owners[0], 2);
+        _mintableErc721.mint(_owners[1], 3);
+        _erc721Token = IERC721(address(_mintableErc721));
 
         _tokenStaker = new TokenStaker();
     }
@@ -153,5 +160,94 @@ contract TokenStakerTest is Test {
         assertEq(oldContractTokenBalance - newContractTokenBalance, 100);
     }
 
-    // TODO ERC721 and ERC1155 tests
+    function test_StakeErc721RevertWhen_InsufficientAllowance() public {
+        vm.startPrank(_owners[0]);
+
+        vm.expectRevert();
+        _tokenStaker.stakeErc721(ACCOUNT_A, _erc721Token, 1);
+    }
+
+    function test_StakeErc721RevertWhen_InsufficientBalance() public {
+        vm.startPrank(_owners[0]);
+        _erc721Token.setApprovalForAll(address(_tokenStaker), true);
+
+        vm.expectRevert();
+        _tokenStaker.stakeErc721(ACCOUNT_A, _erc721Token, 3);
+    }
+
+    function test_StakerErc721When_ValidBalance() public {
+        vm.startPrank(_owners[0]);
+
+        uint256[] memory allTokensIds = new uint256[](0);
+        uint256[] memory diffTokenId = new uint256[](1);
+        diffTokenId[0] = 2;
+
+        uint256 oldOwnerStake =
+            _tokenStaker.erc721StakeOf(_owners[0], _erc721Token, allTokensIds, ACCOUNT_A);
+        uint256 oldOwnerTokenBalance = _erc721Token.balanceOf(_owners[0]);
+        uint256 oldContractTokenBalance = _erc721Token.balanceOf(address(_tokenStaker));
+
+        _erc721Token.setApprovalForAll(address(_tokenStaker), true);
+        _tokenStaker.stakeErc721(ACCOUNT_A, _erc721Token, 1);
+
+        uint256 newOwnerStake =
+            _tokenStaker.erc721StakeOf(_owners[0], _erc721Token, allTokensIds, ACCOUNT_A);
+        assertEq(newOwnerStake - oldOwnerStake, 1);
+
+        uint256 newOwnerTokenBalance = _erc721Token.balanceOf(_owners[0]);
+        assertEq(oldOwnerTokenBalance - newOwnerTokenBalance, 1);
+
+        uint256 newContractTokenBalance = _erc721Token.balanceOf(address(_tokenStaker));
+        assertEq(newContractTokenBalance - oldContractTokenBalance, 1);
+    }
+
+    function test_UnstakeErc721RevertWhen_InvalidTokenId() public {
+        vm.startPrank(_owners[0]);
+        _erc721Token.setApprovalForAll(address(_tokenStaker), true);
+        _tokenStaker.stakeErc721(ACCOUNT_A, _erc721Token, 1);
+
+        vm.expectRevert();
+        _tokenStaker.unstakeErc721(ACCOUNT_A, _erc721Token, 2);
+    }
+
+    function test_UnstakeErc721RevertWhen_InvalidAccount() public {
+        vm.startPrank(_owners[0]);
+        _erc721Token.setApprovalForAll(address(_tokenStaker), true);
+        _tokenStaker.stakeErc721(ACCOUNT_A, _erc721Token, 1);
+
+        vm.expectRevert();
+        _tokenStaker.unstakeErc721(ACCOUNT_B, _erc721Token, 1);
+    }
+
+    function test_UnstakeErc721RevertWhen_InvalidOwner() public {
+        vm.startPrank(_owners[0]);
+        _erc721Token.setApprovalForAll(address(_tokenStaker), true);
+        _tokenStaker.stakeErc721(ACCOUNT_A, _erc721Token, 1);
+
+        vm.startPrank(_owners[1]);
+        vm.expectRevert();
+        _tokenStaker.unstakeErc721(ACCOUNT_A, _erc721Token, 1);
+    }
+
+    function test_UnstakeErc721When_ValidOwnerAccountAmount() public {
+        vm.startPrank(_owners[0]);
+        _erc721Token.setApprovalForAll(address(_tokenStaker), true);
+        _tokenStaker.stakeErc721(ACCOUNT_A, _erc721Token, 1);
+
+        uint256 oldOwnerTokenBalance = _erc721Token.balanceOf(_owners[0]);
+        uint256 oldContractTokenBalance = _erc721Token.balanceOf(address(_tokenStaker));
+
+        _tokenStaker.unstakeErc721(ACCOUNT_A, _erc721Token, 1);
+
+        uint256[] memory allTokensIds = new uint256[](0);
+        uint256 stake =
+            _tokenStaker.erc721StakeOf(_owners[0], _erc721Token, allTokensIds, ACCOUNT_A);
+        assertEq(stake, 0);
+
+        uint256 newOwnerTokenBalance = _erc721Token.balanceOf(_owners[0]);
+        assertEq(newOwnerTokenBalance - oldOwnerTokenBalance, 1);
+
+        uint256 newContractTokenBalance = _erc721Token.balanceOf(address(_tokenStaker));
+        assertEq(oldContractTokenBalance - newContractTokenBalance, 1);
+    }
 }
