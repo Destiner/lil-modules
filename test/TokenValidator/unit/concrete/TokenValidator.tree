@@ -1,0 +1,27 @@
+TokenValidator::onInstall
+|-- when module is initialized
+|   └-- it should revert
+└-- when module is not initialized
+    |-- when token address is zero
+    |   └-- it should revert
+    └-- when token address is not zero
+        |-- when min amount is zero
+        |   └-- it should revert
+        └-- when min amount is not zero
+            |-- when signer threshold is zero
+            |   └-- it should revert
+            └-- when signer threshold is not zero
+                └-- it should set the account config
+
+
+TokenValidator::validateUserOp
+|-- when module is uninitialized
+|   └-- it should return 1
+└-- when module is initialized
+    |-- when signers are not recovered
+        └-- it should return 1
+    └-- when signers are recovered
+        |-- when valid signer staked balance is below the min amount
+            └-- it should return 1
+        └-- when valid signer staked balance is above the min amount
+            └-- it should return 0
