@@ -5,7 +5,9 @@ import { IERC20 } from "forge-std/interfaces/IERC20.sol";
 import { IERC721 } from "forge-std/interfaces/IERC721.sol";
 import { IERC1155 } from "forge-std/interfaces/IERC1155.sol";
 
-contract MockTokenStaker {
+import { ITokenStaker } from "src/TokenValidator/ITokenStaker.sol";
+
+contract MockTokenStaker is ITokenStaker {
     address[] internal _addresses;
     uint256[] internal _amounts;
 
@@ -13,6 +15,28 @@ contract MockTokenStaker {
         _addresses = addresses;
         _amounts = amounts;
     }
+
+    function stakeErc20(address account, IERC20 tokenAddress, uint256 amount) external { }
+    function unstakeErc20(address account, IERC20 tokenAddress, uint256 amount) external { }
+    function stakeErc721(address account, IERC721 tokenAddress, uint256 id) external { }
+    function unstakeErc721(address account, IERC721 tokenAddress, uint256 id) external { }
+    function stakeErc1155(
+        address account,
+        IERC1155 tokenAddress,
+        uint256 id,
+        uint256 amount
+    )
+        external
+    { }
+
+    function unstakeErc1155(
+        address account,
+        IERC1155 tokenAddress,
+        uint256 id,
+        uint256 amount
+    )
+        external
+    { }
 
     function erc20StakeOf(
         address owner,

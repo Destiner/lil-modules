@@ -12,7 +12,7 @@ import { ECDSA } from "solady/utils/ECDSA.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 
 import { TokenType, TGAConfig } from "./DataTypes.sol";
-import { TokenStaker } from "./TokenStaker.sol";
+import { ITokenStaker } from "./ITokenStaker.sol";
 
 contract TokenValidator is ERC7579ValidatorBase {
     using LibSort for *;
@@ -21,7 +21,7 @@ contract TokenValidator is ERC7579ValidatorBase {
                                 CONSTANTS & STORAGE
     //////////////////////////////////////////////////////////////////////////*/
 
-    TokenStaker public immutable TOKEN_STAKER;
+    ITokenStaker public immutable TOKEN_STAKER;
     // account => TGAConfig
     mapping(address account => TGAConfig config) public accountConfig;
 
@@ -38,7 +38,7 @@ contract TokenValidator is ERC7579ValidatorBase {
                                     CONSTRUCTOR
     //////////////////////////////////////////////////////////////////////////*/
 
-    constructor(TokenStaker _tokenStaker) {
+    constructor(ITokenStaker _tokenStaker) {
         TOKEN_STAKER = _tokenStaker;
     }
 

@@ -1,11 +1,13 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.23;
+
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
 import { IERC721 } from "forge-std/interfaces/IERC721.sol";
 import { IERC1155 } from "forge-std/interfaces/IERC1155.sol";
 
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.23;
+import { ITokenStaker } from "./ITokenStaker.sol";
 
-contract TokenStaker {
+contract TokenStaker is ITokenStaker {
     /*//////////////////////////////////////////////////////////////////////////
                                 CONSTANTS & STORAGE
     //////////////////////////////////////////////////////////////////////////*/

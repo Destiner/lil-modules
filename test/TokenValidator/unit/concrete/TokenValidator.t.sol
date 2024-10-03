@@ -6,7 +6,6 @@ import { Test } from "forge-std/Test.sol";
 import { IERC7579Module } from "modulekit/external/ERC7579.sol";
 
 import {
-    TokenStaker,
     TokenValidator,
     TGAConfig,
     TokenType,
@@ -58,7 +57,7 @@ contract TokenValidatorTest is Test {
         amounts[1] = 200;
 
         _tokenStaker = new MockTokenStaker(_signers, amounts);
-        validator = new TokenValidator(TokenStaker(address(_tokenStaker)));
+        validator = new TokenValidator(_tokenStaker);
     }
 
     /*//////////////////////////////////////////////////////////////////////////
