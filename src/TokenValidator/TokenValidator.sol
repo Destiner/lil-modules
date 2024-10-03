@@ -16,7 +16,7 @@ contract TokenValidator is ERC7579ValidatorBase {
     using LibSort for *;
 
     /*//////////////////////////////////////////////////////////////////////////
-                            CONSTANTS & STORAGE
+                                CONSTANTS & STORAGE
     //////////////////////////////////////////////////////////////////////////*/
 
     TokenStaker public immutable TOKEN_STAKER;
@@ -24,7 +24,7 @@ contract TokenValidator is ERC7579ValidatorBase {
     mapping(address account => TGAConfig config) public accountConfig;
 
     /*//////////////////////////////////////////////////////////////////////////
-                                 CONSTRUCTOR
+                                    CONSTRUCTOR
     //////////////////////////////////////////////////////////////////////////*/
 
     constructor(TokenStaker _tokenStaker) {

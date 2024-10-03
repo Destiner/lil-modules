@@ -6,6 +6,10 @@ import { IERC1155 } from "forge-std/interfaces/IERC1155.sol";
 pragma solidity ^0.8.23;
 
 contract TokenStaker {
+    /*//////////////////////////////////////////////////////////////////////////
+                                CONSTANTS & STORAGE
+    //////////////////////////////////////////////////////////////////////////*/
+
     mapping(address owner => mapping(IERC20 token => mapping(address account => uint256 balance)))
         public erc20Stakes;
     mapping(
@@ -21,7 +25,15 @@ contract TokenStaker {
             )
     ) public erc1155Stakes;
 
+    /*//////////////////////////////////////////////////////////////////////////
+                                       ERRORS
+    //////////////////////////////////////////////////////////////////////////*/
+
     error InvalidAccount();
+
+    /*//////////////////////////////////////////////////////////////////////////
+                                     EXTERNALS
+    //////////////////////////////////////////////////////////////////////////*/
 
     function stakeErc20(address account, IERC20 tokenAddress, uint256 amount) external {
         if (account == address(0)) {

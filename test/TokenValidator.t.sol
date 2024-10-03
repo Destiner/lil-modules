@@ -23,6 +23,10 @@ contract TokenValidatorTest is RhinestoneModuleKit, Test {
     using ModuleKitHelpers for *;
     using ModuleKitUserOp for *;
 
+    /*//////////////////////////////////////////////////////////////////////////
+                                    CONTRACTS
+    //////////////////////////////////////////////////////////////////////////*/
+
     // account and modules
     AccountInstance internal instance;
     TokenValidator internal validator;
@@ -35,6 +39,10 @@ contract TokenValidatorTest is RhinestoneModuleKit, Test {
     address[] _signers;
     uint256[] _signerPks;
 
+    /*//////////////////////////////////////////////////////////////////////////
+                                      SETUP
+    //////////////////////////////////////////////////////////////////////////*/
+
     function setUp() public {
         init();
 
@@ -44,7 +52,7 @@ contract TokenValidatorTest is RhinestoneModuleKit, Test {
         // Create the signers
         _signers = new address[](1);
         _signerPks = new uint256[](1);
-        (address _signer1, uint256 _signer1Pk) = makeAddrAndKey("owner1");
+        (address _signer1, uint256 _signer1Pk) = makeAddrAndKey("signer1");
         _signers[0] = _signer1;
         _signerPks[0] = _signer1Pk;
 
@@ -82,6 +90,10 @@ contract TokenValidatorTest is RhinestoneModuleKit, Test {
         tokenStaker.stakeErc20(instance.account, IERC20(address(usdc)), 100_000);
         vm.stopPrank();
     }
+
+    /*//////////////////////////////////////////////////////////////////////////
+                                      TESTS
+    //////////////////////////////////////////////////////////////////////////*/
 
     function test_ValidateUserOp() public {
         // it should validate the user op
