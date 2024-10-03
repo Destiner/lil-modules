@@ -6,7 +6,6 @@ import { IERC20 } from "forge-std/interfaces/IERC20.sol";
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 import { CheckSignatures } from "checknsignatures/CheckNSignatures.sol";
-import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
 import { ECDSA } from "solady/utils/ECDSA.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 
@@ -20,7 +19,7 @@ contract TokenValidator is ERC7579ValidatorBase {
                             CONSTANTS & STORAGE
     //////////////////////////////////////////////////////////////////////////*/
 
-    TokenStaker public immutable tokenStaker;
+    TokenStaker public immutable TOKEN_STAKER;
     // account => TGAConfig
     mapping(address account => TGAConfig config) public accountConfig;
 
@@ -29,7 +28,7 @@ contract TokenValidator is ERC7579ValidatorBase {
     //////////////////////////////////////////////////////////////////////////*/
 
     constructor(TokenStaker _tokenStaker) {
-        tokenStaker = _tokenStaker;
+        TOKEN_STAKER = _tokenStaker;
     }
 
     /*//////////////////////////////////////////////////////////////////////////
@@ -54,10 +53,8 @@ contract TokenValidator is ERC7579ValidatorBase {
 
     /**
      * De-initialize the module with the given data
-     *
-     * @param data The data to de-initialize the module with
      */
-    function onUninstall(bytes calldata data) external override {
+    function onUninstall(bytes calldata) external override {
         // clean up the account config
         delete accountConfig[msg.sender];
     }
@@ -192,7 +189,7 @@ contract TokenValidator is ERC7579ValidatorBase {
         if (config.tokenAddress == address(0)) {
             return false;
         }
-        uint256 balance = tokenStaker.erc20Stakes(signer, IERC20(config.tokenAddress), account);
+        uint256 balance = TOKEN_STAKER.erc20Stakes(signer, IERC20(config.tokenAddress), account);
         return balance >= config.minAmount;
     }
 
