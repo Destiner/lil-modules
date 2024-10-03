@@ -33,8 +33,8 @@ contract TokenStaker {
     }
 
     function unstakeErc20(address account, IERC20 tokenAddress, uint256 amount) external {
-        tokenAddress.transfer(msg.sender, amount);
         erc20Stakes[msg.sender][tokenAddress][account] -= amount;
+        tokenAddress.transfer(msg.sender, amount);
     }
 
     function stakeErc721(
@@ -61,8 +61,8 @@ contract TokenStaker {
     )
         external
     {
-        tokenAddress.transferFrom(address(this), msg.sender, id);
         erc721Stakes[msg.sender][tokenAddress][id][account] -= amount;
+        tokenAddress.transferFrom(address(this), msg.sender, id);
     }
 
     function stakeErc1155(
@@ -89,7 +89,7 @@ contract TokenStaker {
     )
         external
     {
-        tokenAddress.safeTransferFrom(address(this), msg.sender, id, amount, "");
         erc1155Stakes[msg.sender][tokenAddress][id][account] -= amount;
+        tokenAddress.safeTransferFrom(address(this), msg.sender, id, amount, "");
     }
 }
