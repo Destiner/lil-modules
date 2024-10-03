@@ -24,6 +24,14 @@ contract TokenValidator is ERC7579ValidatorBase {
     mapping(address account => TGAConfig config) public accountConfig;
 
     /*//////////////////////////////////////////////////////////////////////////
+                                       ERRORS
+    //////////////////////////////////////////////////////////////////////////*/
+
+    error InvalidTokenAddress();
+    error InvalidMinAmount();
+    error InvalidSignerThreshold();
+
+    /*//////////////////////////////////////////////////////////////////////////
                                     CONSTRUCTOR
     //////////////////////////////////////////////////////////////////////////*/
 
@@ -47,6 +55,9 @@ contract TokenValidator is ERC7579ValidatorBase {
         if (isInitialized(account)) revert AlreadyInitialized(account);
 
         TGAConfig memory config = abi.decode(data, (TGAConfig));
+        if (config.tokenAddress == address(0)) revert InvalidTokenAddress();
+        if (config.minAmount == 0) revert InvalidMinAmount();
+        if (config.signerThreshold == 0) revert InvalidSignerThreshold();
 
         accountConfig[account] = config;
     }
@@ -155,9 +166,6 @@ contract TokenValidator is ERC7579ValidatorBase {
         // get the account config
         TGAConfig storage config = accountConfig[account];
         uint256 _threshold = config.signerThreshold;
-        if (_threshold == 0) {
-            return false;
-        }
 
         // recover the signers from the signatures
         address[] memory signers =
