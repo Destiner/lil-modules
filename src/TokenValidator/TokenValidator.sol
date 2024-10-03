@@ -163,6 +163,10 @@ contract TokenValidator is ERC7579ValidatorBase {
         view
         returns (bool)
     {
+        if (isInitialized(account) == false) {
+            return false;
+        }
+
         // get the account config
         TGAConfig storage config = accountConfig[account];
         uint256 _threshold = config.signerThreshold;
