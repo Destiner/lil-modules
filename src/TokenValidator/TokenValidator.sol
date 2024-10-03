@@ -76,6 +76,30 @@ contract TokenValidator is ERC7579ValidatorBase {
         delete accountConfig[msg.sender];
     }
 
+    function setMinAmount(uint256 minAmount) external {
+        if (minAmount == 0) revert InvalidMinAmount();
+
+        // cache the account
+        address account = msg.sender;
+        // check if the module is initialized and revert if it is not
+        if (!isInitialized(account)) revert NotInitialized(account);
+
+        TGAConfig storage $config = accountConfig[account];
+        $config.minAmount = minAmount;
+    }
+
+    function setSignerThreshold(uint256 signerThreshold) external {
+        if (signerThreshold == 0) revert InvalidSignerThreshold();
+
+        // cache the account
+        address account = msg.sender;
+        // check if the module is initialized and revert if it is not
+        if (!isInitialized(account)) revert NotInitialized(account);
+
+        TGAConfig storage $config = accountConfig[account];
+        $config.signerThreshold = signerThreshold;
+    }
+
     /**
      * Check if the module is initialized
      * @param smartAccount The smart account to check

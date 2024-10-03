@@ -207,6 +207,53 @@ contract TokenValidatorTest is Test {
         _installWithConfig(config);
     }
 
+    function test_SetMinAmountRevertWhen_NotInitialized() public {
+        // it should revert
+        vm.expectRevert(
+            abi.encodeWithSelector(IERC7579Module.NotInitialized.selector, address(this))
+        );
+        validator.setMinAmount(100);
+    }
+
+    function test_SetMinAmountRevertWhen_MinAmountIsZero() public whenModuleIsInitialized {
+        test_OnInstallWhen_ValidConfig();
+
+        // it should revert
+        vm.expectRevert(abi.encodeWithSelector(TokenValidator.InvalidMinAmount.selector));
+        validator.setMinAmount(0);
+    }
+
+    function test_SetMinAmountWhen_ValidAmount() public whenModuleIsInitialized {
+        test_OnInstallWhen_ValidConfig();
+
+        validator.setMinAmount(200);
+    }
+
+    function test_SetSignerThresholdRevertWhen_NotInitialized() public {
+        // it should revert
+        vm.expectRevert(
+            abi.encodeWithSelector(IERC7579Module.NotInitialized.selector, address(this))
+        );
+        validator.setMinAmount(100);
+    }
+
+    function test_SetSignerThresholdRevertWhen_SignerThresholdIsZero()
+        public
+        whenModuleIsInitialized
+    {
+        test_OnInstallWhen_ValidConfig();
+
+        // it should revert
+        vm.expectRevert(abi.encodeWithSelector(TokenValidator.InvalidSignerThreshold.selector));
+        validator.setSignerThreshold(0);
+    }
+
+    function test_SetSignerThresholdWhen_ValidAmount() public whenModuleIsInitialized {
+        test_OnInstallWhen_ValidConfig();
+
+        validator.setSignerThreshold(1);
+    }
+
     function test_ValidateUserOpWhenUninitialized() public {
         PackedUserOperation memory userOp = getEmptyUserOperation();
         userOp.sender = address(this);

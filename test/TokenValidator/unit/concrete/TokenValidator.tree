@@ -20,6 +20,26 @@ TokenValidator::onInstall
                     └-- it should set the account config
 
 
+TokenValidator::setMinBalance
+|-- when module is not initialized
+|   └-- it should revert
+└-- when module is initialized
+    |-- when new min balance is zero
+    |   └-- it should revert
+    └-- when new min balance is above zero
+        └-- it should update min balance
+
+
+TokenValidator::setSignerThreshold
+|-- when module is not initialized
+|   └-- it should revert
+└-- when module is initialized
+    |-- when new threshold is zero
+    |   └-- it should revert
+    └-- when new threshold is above zero
+        └-- it should update signer threshold
+
+
 TokenValidator::validateUserOp
 |-- when module is uninitialized
 |   └-- it should return 1
