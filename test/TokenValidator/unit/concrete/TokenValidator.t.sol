@@ -49,10 +49,10 @@ contract TokenValidatorTest is Test {
         _signers = new address[](2);
         _signerPks = new uint256[](2);
 
-        (address _signer1, uint256 _signer1Pk) = makeAddrAndKey("validSigner1");
+        (address _signer1, uint256 _signer1Pk) = makeAddrAndKey("signer1");
         _signers[0] = _signer1;
         _signerPks[0] = _signer1Pk;
-        (address _signer2, uint256 _signer2Pk) = makeAddrAndKey("validSigner2");
+        (address _signer2, uint256 _signer2Pk) = makeAddrAndKey("signer2");
         _signers[1] = _signer2;
         _signerPks[1] = _signer2Pk;
 
@@ -73,7 +73,7 @@ contract TokenValidatorTest is Test {
     }
 
     function _getConfig(address _tokenAddress) internal returns (TGAConfig memory config) {
-        config = _getConfig(_tokenAddress, 1);
+        config = _getConfig(_tokenAddress, 100);
     }
 
     function _getConfig(
@@ -83,7 +83,7 @@ contract TokenValidatorTest is Test {
         internal
         returns (TGAConfig memory config)
     {
-        config = _getConfig(_tokenAddress, _minAmount, 1);
+        config = _getConfig(_tokenAddress, _minAmount, 2);
     }
 
     function _getConfig(
@@ -114,6 +114,11 @@ contract TokenValidatorTest is Test {
             validTokenIds: _validTokenIds,
             signerThreshold: _signerThreshold
         });
+    }
+
+    function _installWithConfig(TGAConfig memory config) internal {
+        bytes memory data = abi.encode(config);
+        validator.onInstall(data);
     }
 
     /*//////////////////////////////////////////////////////////////////////////
@@ -164,7 +169,7 @@ contract TokenValidatorTest is Test {
         whenMinAmountIsNot0
     {
         // it should revert
-        TGAConfig memory config = _getConfig(_token, 150, 0);
+        TGAConfig memory config = _getConfig(_token, 100, 0);
         bytes memory data = abi.encode(config);
 
         vm.expectRevert(abi.encodeWithSelector(TokenValidator.InvalidSignerThreshold.selector));
@@ -182,7 +187,7 @@ contract TokenValidatorTest is Test {
         uint256[] memory tokenIds = new uint256[](2);
         tokenIds[0] = 1;
         tokenIds[1] = 2;
-        TGAConfig memory config = _getConfig(_token, 150, 1, tokenIds);
+        TGAConfig memory config = _getConfig(_token, 100, 2, tokenIds);
         bytes memory data = abi.encode(config);
 
         vm.expectRevert(abi.encodeWithSelector(TokenValidator.InvalidTokenIds.selector));
@@ -198,10 +203,8 @@ contract TokenValidatorTest is Test {
         whenTokenIdsSetProperly
     {
         // it should revert
-        TGAConfig memory config = _getConfig(_token, 150, 1);
-        bytes memory data = abi.encode(config);
-
-        validator.onInstall(data);
+        TGAConfig memory config = _getConfig(_token, 100, 2);
+        _installWithConfig(config);
     }
 
     function test_ValidateUserOpWhenUninitialized() public {
@@ -230,7 +233,7 @@ contract TokenValidatorTest is Test {
         assertEq(validationData, 1);
     }
 
-    function test_ValidateUserOpWhenSignersNotStakedEnough()
+    function test_ValidateUserOpWhenSignersDoNotPassThreshold()
         public
         whenModuleIsInitialized
         whenSignaturesAreValid
@@ -242,7 +245,31 @@ contract TokenValidatorTest is Test {
         bytes32 userOpHash = bytes32(keccak256("userOpHash"));
 
         bytes memory signature1 = signHash(_signerPks[0], userOpHash);
-        userOp.signature = abi.encodePacked(signature1);
+        bytes memory signature2 = signHash(uint256(2), userOpHash);
+        userOp.signature = abi.encodePacked(signature1, signature2);
+
+        uint256 validationData =
+            ERC7579ValidatorBase.ValidationData.unwrap(validator.validateUserOp(userOp, userOpHash));
+        assertEq(validationData, 1);
+    }
+
+    function test_ValidateUserOpWhenSignersNotStakedEnough()
+        public
+        whenModuleIsInitialized
+        whenSignaturesAreValid
+        whenAboveSignerThreshold
+    {
+        TGAConfig memory config = _getConfig();
+        config.minAmount = 150;
+        _installWithConfig(config);
+
+        PackedUserOperation memory userOp = getEmptyUserOperation();
+        userOp.sender = address(this);
+        bytes32 userOpHash = bytes32(keccak256("userOpHash"));
+
+        bytes memory signature1 = signHash(_signerPks[0], userOpHash);
+        bytes memory signature2 = signHash(_signerPks[1], userOpHash);
+        userOp.signature = abi.encodePacked(signature1, signature2);
 
         uint256 validationData =
             ERC7579ValidatorBase.ValidationData.unwrap(validator.validateUserOp(userOp, userOpHash));
@@ -253,6 +280,7 @@ contract TokenValidatorTest is Test {
         public
         whenModuleIsInitialized
         whenSignaturesAreValid
+        whenAboveSignerThreshold
         whenSignersStakedEnough
     {
         test_OnInstallWhen_ValidConfig();
@@ -261,8 +289,9 @@ contract TokenValidatorTest is Test {
         userOp.sender = address(this);
         bytes32 userOpHash = bytes32(keccak256("userOpHash"));
 
-        bytes memory signature1 = signHash(_signerPks[1], userOpHash);
-        userOp.signature = abi.encodePacked(signature1);
+        bytes memory signature1 = signHash(_signerPks[0], userOpHash);
+        bytes memory signature2 = signHash(_signerPks[1], userOpHash);
+        userOp.signature = abi.encodePacked(signature1, signature2);
 
         uint256 validationData =
             ERC7579ValidatorBase.ValidationData.unwrap(validator.validateUserOp(userOp, userOpHash));
@@ -298,6 +327,10 @@ contract TokenValidatorTest is Test {
     }
 
     modifier whenSignaturesAreValid() {
+        _;
+    }
+
+    modifier whenAboveSignerThreshold() {
         _;
     }
 

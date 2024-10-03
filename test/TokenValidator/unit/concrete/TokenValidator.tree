@@ -27,7 +27,10 @@ TokenValidator::validateUserOp
     |-- when signers are not recovered
         └-- it should return 1
     └-- when signers are recovered
-        |-- when valid signer staked balance is below the min amount
+        |-- when signer count is below the threshold
             └-- it should return 1
-        └-- when valid signer staked balance is above the min amount
-            └-- it should return 0
+        └-- when signer count is above the threshold
+            |-- when valid signer staked balance is below the min amount
+            |   └-- it should return 1
+            └-- when valid signer staked balance is above the min amount
+                └-- it should return 0
