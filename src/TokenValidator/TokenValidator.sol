@@ -230,7 +230,6 @@ contract TokenValidator is ERC7579ValidatorBase {
                 TOKEN_STAKER.erc20StakeOf(signer, IERC20(config.tokenAddress), account);
             return balance >= config.minAmount;
         }
-        uint256[] memory validTokenIds = config.validTokenIds;
         if (config.tokenType == TokenType.ERC721) {
             uint256 balance = TOKEN_STAKER.erc721StakeOf(
                 signer, IERC721(config.tokenAddress), config.validTokenIds, account
