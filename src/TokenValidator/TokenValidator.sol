@@ -242,6 +242,7 @@ contract TokenValidator is ERC7579ValidatorBase {
             );
             return balance >= config.minAmount;
         }
+        return false;
     }
 
     /*//////////////////////////////////////////////////////////////////////////
