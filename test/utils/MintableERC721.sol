@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
 import { ERC721 } from "solady/tokens/ERC721.sol";

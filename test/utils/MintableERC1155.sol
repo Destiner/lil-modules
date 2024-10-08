@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
 import { ERC1155 } from "solady/tokens/ERC1155.sol";
