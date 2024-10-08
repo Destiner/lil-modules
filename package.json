@@ -1,11 +1,11 @@
 {
-  "name": "@rhinestone/module-template",
-  "version": "0.4.1",
-  "description": "A Foundry template for building modules using the ModuleKit",
-  "license": "GPL-3.0",
+  "name": "lil-modules",
+  "version": "1.0.0",
+  "description": "ERC7579 modules for fun and profit",
+  "license": "MIT",
   "author": {
-    "name": "Rhinestone",
-    "url": "https://rhinestone.wtf"
+    "name": "Timur Badretdinov",
+    "url": "https://github.com/Destiner"
   },
   "scripts": {
     "build": "forge build",
@@ -37,18 +37,9 @@
     "foundry.toml",
     "remappings.txt"
   ],
-  "homepage": "https://docs.rhinestone.wtf/module-template",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/rhinestonewtf/module-template.git"
-  },
-  "bugs": {
-    "url": "https://github.com/rhinestonewtf/module-template/issues"
-  },
   "keywords": [
     "account abstraction",
-    "smart account modules",
-    "module template"
+    "smart account modules"
   ],
   "publishConfig": {
     "access": "public"
