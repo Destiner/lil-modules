@@ -9,7 +9,7 @@ contract MintableERC1155 is ERC1155 {
         owner = msg.sender;
     }
 
-    function uri(uint256 id) public view override returns (string memory) {
+    function uri(uint256) public pure override returns (string memory) {
         return "";
     }
 
