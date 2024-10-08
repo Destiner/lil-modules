@@ -22,7 +22,7 @@ contract MintableERC721 is ERC721 {
         return _name;
     }
 
-    function tokenURI(uint256 id) public view override returns (string memory) {
+    function tokenURI(uint256) public pure override returns (string memory) {
         return "";
     }
 

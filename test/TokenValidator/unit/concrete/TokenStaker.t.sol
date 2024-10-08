@@ -29,12 +29,12 @@ contract TokenStakerTest is Test {
                                     VARIABLES
     //////////////////////////////////////////////////////////////////////////*/
 
-    address _account;
-    IERC20 _erc20Token;
-    IERC721 _erc721Token;
-    IERC1155 _erc1155Token;
-    address[] _owners;
-    uint256[] _ownerPks;
+    address private _account;
+    IERC20 private _erc20Token;
+    IERC721 private _erc721Token;
+    IERC1155 private _erc1155Token;
+    address[] private _owners;
+    uint256[] private _ownerPks;
 
     /*//////////////////////////////////////////////////////////////////////////
                                       SETUP
