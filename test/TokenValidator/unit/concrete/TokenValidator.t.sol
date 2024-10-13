@@ -18,7 +18,7 @@ import {
     ValidationData
 } from "test/utils/ERC4337.sol";
 import { EIP1271_MAGIC_VALUE } from "test/utils/Constants.sol";
-import { MockTokenStaker } from "test/mocks/MockTokenStaker.sol";
+import { MockTokenStaker } from "test/TokenValidator/mocks/MockTokenStaker.sol";
 import { signHash } from "test/utils/Signature.sol";
 
 contract TokenValidatorTest is Test {
