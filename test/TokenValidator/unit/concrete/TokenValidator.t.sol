@@ -11,13 +11,7 @@ import {
     TokenType,
     ERC7579ValidatorBase
 } from "src/TokenValidator/TokenValidator.sol";
-import {
-    PackedUserOperation,
-    getEmptyUserOperation,
-    parseValidationData,
-    ValidationData
-} from "test/utils/ERC4337.sol";
-import { EIP1271_MAGIC_VALUE } from "test/utils/Constants.sol";
+import { PackedUserOperation, getEmptyUserOperation } from "test/utils/ERC4337.sol";
 import { MockTokenStaker } from "test/TokenValidator/mocks/MockTokenStaker.sol";
 import { signHash } from "test/utils/Signature.sol";
 

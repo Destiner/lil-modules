@@ -11,7 +11,6 @@ import {
     UserOpData
 } from "modulekit/ModuleKit.sol";
 import { MODULE_TYPE_VALIDATOR } from "modulekit/external/ERC7579.sol";
-import { ERC20 } from "solady/tokens/ERC20.sol";
 
 import { TokenValidator } from "src/TokenValidator/TokenValidator.sol";
 import { TokenStaker } from "src/TokenValidator/TokenStaker.sol";
