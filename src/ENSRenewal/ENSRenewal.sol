@@ -31,6 +31,7 @@ contract ENSRenewal is ERC7579ExecutorBase {
 
     error InvalidOwner();
     error InvalidExpiration();
+    error NotYetExpired();
     error InDenylist();
     error NotInAllowlist();
 
@@ -153,18 +154,18 @@ contract ENSRenewal is ERC7579ExecutorBase {
 
         // Check that the remaining time is less than the renewal threshold
         uint256 expiration = ensBaseRegistrar.nameExpires(tokenId);
-        if (expiration != 0) revert InvalidExpiration();
-        if (expiration < block.timestamp + config.renewalDuration) revert InvalidExpiration();
+        if (expiration == 0) revert InvalidExpiration();
+        if (expiration > block.timestamp + config.renewalDuration) revert NotYetExpired();
 
         // Check that the domain is not in the denylist
         if (config.denylistEnabled) {
             mapping(uint256 => bool) storage accountDenylist = denylist[account][config.iteration];
-            if (!accountDenylist[tokenId]) revert InDenylist();
+            if (accountDenylist[tokenId]) revert InDenylist();
         }
         // Check that the domain is in the allowlist (if not empty)
         if (config.allowlistEnabled) {
             mapping(uint256 => bool) storage accountAllowlist = allowlist[account][config.iteration];
-            if (accountAllowlist[tokenId]) revert NotInAllowlist();
+            if (!accountAllowlist[tokenId]) revert NotInAllowlist();
         }
 
         IENSETHPriceOracle.Price memory price =
