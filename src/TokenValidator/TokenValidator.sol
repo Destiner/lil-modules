@@ -8,14 +8,16 @@ import { IERC1155 } from "forge-std/interfaces/IERC1155.sol";
 import { ERC7579ValidatorBase } from "modulekit/Modules.sol";
 import { PackedUserOperation } from "modulekit/external/ERC4337.sol";
 import { CheckSignatures } from "checknsignatures/CheckNSignatures.sol";
+import { FlatBytesLib } from "flatbytes/BytesLib.sol";
 import { ECDSA } from "solady/utils/ECDSA.sol";
 import { LibSort } from "solady/utils/LibSort.sol";
 
-import { TokenType, TGAConfig } from "./DataTypes.sol";
+import { InstallData, TokenType, TGAConfig } from "./DataTypes.sol";
 import { ITokenStaker } from "./ITokenStaker.sol";
 
 contract TokenValidator is ERC7579ValidatorBase {
     using LibSort for *;
+    using FlatBytesLib for FlatBytesLib.Bytes;
 
     /*//////////////////////////////////////////////////////////////////////////
                                 CONSTANTS & STORAGE
@@ -57,15 +59,22 @@ contract TokenValidator is ERC7579ValidatorBase {
         // check if the module is already initialized and revert if it is
         if (isInitialized(account)) revert AlreadyInitialized(account);
 
-        TGAConfig memory config = abi.decode(data, (TGAConfig));
-        if (config.tokenAddress == address(0)) revert InvalidTokenAddress();
-        if (config.minAmount == 0) revert InvalidMinAmount();
-        if (config.signerThreshold == 0) revert InvalidSignerThreshold();
-        if (config.tokenType == TokenType.ERC20 && config.validTokenIds.length > 0) {
+        // input validation
+        InstallData memory data = abi.decode(data, (InstallData));
+        if (data.tokenAddress == address(0)) revert InvalidTokenAddress();
+        if (data.minAmount == 0) revert InvalidMinAmount();
+        if (data.signerThreshold == 0) revert InvalidSignerThreshold();
+        if (data.tokenType == TokenType.ERC20 && data.validTokenIds.length > 0) {
             revert InvalidTokenIds();
         }
 
-        accountConfig[account] = config;
+        // store the config
+        TGAConfig storage $config = accountConfig[account];
+        $config.tokenType = data.tokenType;
+        $config.tokenAddress = data.tokenAddress;
+        $config.minAmount = data.minAmount;
+        $config.signerThreshold = data.signerThreshold;
+        $config.validTokenIds.store(abi.encode(data.validTokenIds));
     }
 
     /**
@@ -231,14 +240,15 @@ contract TokenValidator is ERC7579ValidatorBase {
             return balance >= config.minAmount;
         }
         if (config.tokenType == TokenType.ERC721) {
-            uint256 balance = TOKEN_STAKER.erc721StakeOf(
-                signer, IERC721(config.tokenAddress), config.validTokenIds, account
-            );
+            uint256[] memory tokenIds = abi.decode(config.validTokenIds.load(), (uint256[]));
+            uint256 balance =
+                TOKEN_STAKER.erc721StakeOf(signer, IERC721(config.tokenAddress), tokenIds, account);
             return balance >= config.minAmount;
         }
         if (config.tokenType == TokenType.ERC1155) {
+            uint256[] memory tokenIds = abi.decode(config.validTokenIds.load(), (uint256[]));
             uint256 balance = TOKEN_STAKER.erc1155StakeOf(
-                signer, IERC1155(config.tokenAddress), config.validTokenIds, account
+                signer, IERC1155(config.tokenAddress), tokenIds, account
             );
             return balance >= config.minAmount;
         }

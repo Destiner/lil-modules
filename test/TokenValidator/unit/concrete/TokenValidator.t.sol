@@ -4,10 +4,11 @@ pragma solidity ^0.8.23;
 import { Test } from "forge-std/Test.sol";
 
 import { IERC7579Module } from "modulekit/external/ERC7579.sol";
+import { FlatBytesLib } from "flatbytes/BytesLib.sol";
 
 import {
+    InstallData,
     TokenValidator,
-    TGAConfig,
     TokenType,
     ERC7579ValidatorBase
 } from "src/TokenValidator/TokenValidator.sol";
@@ -16,6 +17,8 @@ import { MockTokenStaker } from "test/TokenValidator/mocks/MockTokenStaker.sol";
 import { signHash } from "test/utils/Signature.sol";
 
 contract TokenValidatorTest is Test {
+    using FlatBytesLib for FlatBytesLib.Bytes;
+
     /*//////////////////////////////////////////////////////////////////////////
                                     CONTRACTS
     //////////////////////////////////////////////////////////////////////////*/
@@ -30,6 +33,7 @@ contract TokenValidatorTest is Test {
     address _token = 0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa;
     address[] _signers;
     uint256[] _signerPks;
+    FlatBytesLib.Bytes validTokenIds;
 
     /*//////////////////////////////////////////////////////////////////////////
                                       SETUP
@@ -58,57 +62,59 @@ contract TokenValidatorTest is Test {
                                     INTERNAL
     //////////////////////////////////////////////////////////////////////////*/
 
-    function _getConfig() internal returns (TGAConfig memory config) {
-        config = _getConfig(_token);
+    function _getInstallData() internal returns (InstallData memory data) {
+        data = _getInstallData(_token);
     }
 
-    function _getConfig(address _tokenAddress) internal returns (TGAConfig memory config) {
-        config = _getConfig(_tokenAddress, 100);
+    function _getInstallData(address _tokenAddress) internal returns (InstallData memory data) {
+        data = _getInstallData(_tokenAddress, 100);
     }
 
-    function _getConfig(
+    function _getInstallData(
         address _tokenAddress,
         uint256 _minAmount
     )
         internal
-        returns (TGAConfig memory config)
+        returns (InstallData memory data)
     {
-        config = _getConfig(_tokenAddress, _minAmount, 2);
+        data = _getInstallData(_tokenAddress, _minAmount, 2);
     }
 
-    function _getConfig(
+    function _getInstallData(
         address _tokenAddress,
         uint256 _minAmount,
         uint256 _signerThreshold
     )
         internal
-        returns (TGAConfig memory config)
+        returns (InstallData memory data)
     {
         uint256[] memory validTokenIds = new uint256[](0);
-        config = _getConfig(_tokenAddress, _minAmount, _signerThreshold, validTokenIds);
+        data = _getInstallData(_tokenAddress, _minAmount, _signerThreshold, validTokenIds);
     }
 
-    function _getConfig(
+    function _getInstallData(
         address _tokenAddress,
         uint256 _minAmount,
         uint256 _signerThreshold,
         uint256[] memory _validTokenIds
     )
         internal
-        returns (TGAConfig memory config)
+        returns (InstallData memory data)
     {
-        config = TGAConfig({
+        // bytes memory data = abi.encode(_validTokenIds);
+        // validTokenIds.store(data);
+        data = InstallData({
             tokenType: TokenType.ERC20,
             tokenAddress: _tokenAddress,
             minAmount: _minAmount,
-            validTokenIds: _validTokenIds,
-            signerThreshold: _signerThreshold
+            signerThreshold: _signerThreshold,
+            validTokenIds: _validTokenIds
         });
     }
 
-    function _installWithConfig(TGAConfig memory config) internal {
-        bytes memory data = abi.encode(config);
-        validator.onInstall(data);
+    function _installWithData(InstallData memory data) internal {
+        bytes memory dataBytes = abi.encode(data);
+        validator.onInstall(dataBytes);
     }
 
     /*//////////////////////////////////////////////////////////////////////////
@@ -117,14 +123,14 @@ contract TokenValidatorTest is Test {
 
     function test_OnInstallRevertWhen_ModuleIsIntialized() public {
         // it should revert
-        TGAConfig memory config = _getConfig();
-        bytes memory data = abi.encode(config);
-        validator.onInstall(data);
+        InstallData memory data = _getInstallData();
+        bytes memory dataBytes = abi.encode(data);
+        validator.onInstall(dataBytes);
 
         vm.expectRevert(
             abi.encodeWithSelector(IERC7579Module.AlreadyInitialized.selector, address(this))
         );
-        validator.onInstall(data);
+        validator.onInstall(dataBytes);
     }
 
     function test_OnInstallRevertWhen_ModuleTokenAddressIsNull()
@@ -132,11 +138,11 @@ contract TokenValidatorTest is Test {
         whenModuleIsNotInitialized
     {
         // it should revert
-        TGAConfig memory config = _getConfig(address(0));
-        bytes memory data = abi.encode(config);
+        InstallData memory data = _getInstallData(address(0));
+        bytes memory dataBytes = abi.encode(data);
 
         vm.expectRevert(abi.encodeWithSelector(TokenValidator.InvalidTokenAddress.selector));
-        validator.onInstall(data);
+        validator.onInstall(dataBytes);
     }
 
     function test_OnInstallRevertWhen_MinAmountIsZero()
@@ -145,11 +151,11 @@ contract TokenValidatorTest is Test {
         whenTokenAddressIsNotNull
     {
         // it should revert
-        TGAConfig memory config = _getConfig(_token, 0);
-        bytes memory data = abi.encode(config);
+        InstallData memory data = _getInstallData(_token, 0);
+        bytes memory dataBytes = abi.encode(data);
 
         vm.expectRevert(abi.encodeWithSelector(TokenValidator.InvalidMinAmount.selector));
-        validator.onInstall(data);
+        validator.onInstall(dataBytes);
     }
 
     function test_OnInstallRevertWhen_SignerThresholdIsZero()
@@ -159,11 +165,11 @@ contract TokenValidatorTest is Test {
         whenMinAmountIsNot0
     {
         // it should revert
-        TGAConfig memory config = _getConfig(_token, 100, 0);
-        bytes memory data = abi.encode(config);
+        InstallData memory data = _getInstallData(_token, 100, 0);
+        bytes memory dataBytes = abi.encode(data);
 
         vm.expectRevert(abi.encodeWithSelector(TokenValidator.InvalidSignerThreshold.selector));
-        validator.onInstall(data);
+        validator.onInstall(dataBytes);
     }
 
     function test_OnInstallRevertWhen_TokenIdsSetForErc20()
@@ -177,11 +183,11 @@ contract TokenValidatorTest is Test {
         uint256[] memory tokenIds = new uint256[](2);
         tokenIds[0] = 1;
         tokenIds[1] = 2;
-        TGAConfig memory config = _getConfig(_token, 100, 2, tokenIds);
-        bytes memory data = abi.encode(config);
+        InstallData memory data = _getInstallData(_token, 100, 2, tokenIds);
+        bytes memory dataBytes = abi.encode(data);
 
         vm.expectRevert(abi.encodeWithSelector(TokenValidator.InvalidTokenIds.selector));
-        validator.onInstall(data);
+        validator.onInstall(dataBytes);
     }
 
     function test_OnInstallWhen_ValidConfig()
@@ -193,8 +199,8 @@ contract TokenValidatorTest is Test {
         whenTokenIdsSetProperly
     {
         // it should revert
-        TGAConfig memory config = _getConfig(_token, 100, 2);
-        _installWithConfig(config);
+        InstallData memory data = _getInstallData(_token, 100, 2);
+        _installWithData(data);
     }
 
     function test_SetMinAmountRevertWhen_NotInitialized() public {
@@ -296,9 +302,9 @@ contract TokenValidatorTest is Test {
         whenSignaturesAreValid
         whenAboveSignerThreshold
     {
-        TGAConfig memory config = _getConfig();
-        config.minAmount = 150;
-        _installWithConfig(config);
+        InstallData memory data = _getInstallData();
+        data.minAmount = 150;
+        _installWithData(data);
 
         PackedUserOperation memory userOp = getEmptyUserOperation();
         userOp.sender = address(this);

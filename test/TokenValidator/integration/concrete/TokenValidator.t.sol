@@ -14,7 +14,7 @@ import { MODULE_TYPE_VALIDATOR } from "modulekit/external/ERC7579.sol";
 
 import { TokenValidator } from "src/TokenValidator/TokenValidator.sol";
 import { TokenStaker } from "src/TokenValidator/TokenStaker.sol";
-import { TokenType, TGAConfig } from "src/TokenValidator/DataTypes.sol";
+import { InstallData, TokenType } from "src/TokenValidator/DataTypes.sol";
 import { signHash } from "test/utils/Signature.sol";
 import { MintableERC20 } from "test/utils/MintableERC20.sol";
 
@@ -61,14 +61,14 @@ contract TokenValidatorTest is RhinestoneModuleKit, Test {
         usdc.mint(_signers[0], 1_000_000);
 
         // Create the config
-        TGAConfig memory config;
-        config.tokenType = TokenType.ERC20;
-        config.tokenAddress = address(usdc);
-        config.minAmount = 1;
-        config.validTokenIds = new uint256[](0);
-        config.signerThreshold = 1;
+        InstallData memory data;
+        data.tokenType = TokenType.ERC20;
+        data.tokenAddress = address(usdc);
+        data.minAmount = 1;
+        data.signerThreshold = 1;
+        data.validTokenIds = new uint256[](0);
 
-        bytes memory data = abi.encode(config);
+        bytes memory dataBytes = abi.encode(data);
 
         // Create the validator
         validator = new TokenValidator(tokenStaker);
@@ -80,7 +80,7 @@ contract TokenValidatorTest is RhinestoneModuleKit, Test {
         instance.installModule({
             moduleTypeId: MODULE_TYPE_VALIDATOR,
             module: address(validator),
-            data: data
+            data: dataBytes
         });
 
         // Stake the token
